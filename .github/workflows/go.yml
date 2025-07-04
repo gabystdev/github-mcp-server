@@ -1,5 +1,8 @@
 name: Build and Test Go Project
-on: [push, pull_request]
+on:
+  push
+  pull_request
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -29,4 +32,16 @@ jobs:
         run: script/test
 
       - name: Build
-        run: go build -v ./cmd/github-mcp-server
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            go build -v -o github-mcp-server.exe ./cmd/github-mcp-server
+          else
+            go build -v -o github-mcp-server ./cmd/github-mcp-server
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-mcp-server-${{ runner.os }}
+          path: |
+            github-mcp-server*
